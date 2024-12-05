@@ -4,30 +4,37 @@ import { Container } from 'react-bootstrap';
 import './App.scss';
 import Header from './components/Header';
 import TableUsers from './components/TableUsers';
-import ModalAdd from './components/ModalAdd';
-import { useState } from 'react';
-
+import { Bounce, ToastContainer, toast } from 'react-toastify';
 
 
 function App() {
-  const [isShowModalAdd, setIsShowModalAdd] = useState(false)
 
-  const handleClose = ()=>{
-      setIsShowModalAdd(false)
-  }
   return (
-    <div className="App">
-        <Header/>
+    <>
+      <div className="App">
+        <Header />
         <Container>
-          <div className='d-flex add-new my-3 justify-content-between'>
-            <span><b>List User: </b></span>
-            <button className='btn btn-primary' onClick={()=>{setIsShowModalAdd(true)}}>Add new</button>
-          </div>
-          <TableUsers/> 
+          <TableUsers />
 
         </Container>
-      <ModalAdd show={isShowModalAdd} handleClose={handleClose}/>
-    </div>
+      </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
+
+
+    </>
   );
 }
 
