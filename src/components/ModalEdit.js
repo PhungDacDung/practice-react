@@ -45,7 +45,8 @@ function ModalEdit(props) {
     <>
 
 
-      <Modal show={show} onHide={handleClose} handleEditTable={handleEditTable} user={user}>
+      <Modal show={show} onHide={handleClose} handleEditTable={handleEditTable} user={user} backdrop="static"
+        keyboard={false}>
         <Modal.Header closeButton>
           <Modal.Title>Update user</Modal.Title>
         </Modal.Header>

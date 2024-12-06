@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { fetchAllUser,getUser,deleteUser } from "./services/UserService";
+import { fetchAllUser} from "./services/UserService";
 import ReactPaginate from "react-paginate";
 import ModalAdd from "./ModalAdd";
 import ModalEdit from "./ModalEdit";
 import _ from "lodash";
+import ModalConfirm from "./ModalConfirm";
+
+
 
 
 const TableUsers = () => {
@@ -12,15 +15,19 @@ const TableUsers = () => {
   const [listUsers, setListUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [userEdit,setUserEdit] = useState({});
+  const [userEdit, setUserEdit] = useState({});
+  const [userDelete, setUserDelete] = useState({});
 
 
   const [isShowModalAdd, setIsShowModalAdd] = useState(false)
   const [isShowModalEdit, setIsShowModalEdit] = useState(false)
+  const [isShowModalConfirm, setIsShowModalConfirm] = useState(false)
+
 
   const handleClose = () => {
     setIsShowModalAdd(false)
     setIsShowModalEdit(false)
+    setIsShowModalConfirm(false)
   }
 
   useEffect(() => {
@@ -40,52 +47,68 @@ const TableUsers = () => {
   }
 
 
+
   const handlePageClick = (event) => {
     getUsers(+event.selected + 1)
   }
 
-  const handleUpdateTable = (newUser) =>{
-      setListUsers([newUser,...listUsers])
+  const handleUpdateTable = (newUser) => {
+    setListUsers([newUser, ...listUsers])
   }
 
 
-  const handleEditTable = (user)=>{
+  const handleEditTable = (user) => {
     let listUserCopy = _.cloneDeep(listUsers)
     const indexUser = listUsers.findIndex(item => item.id === user.id)
     listUserCopy[indexUser].first_name = user.first_name
     listUserCopy[indexUser].last_name = user.last_name
 
-    setListUsers(listUserCopy)     
+    setListUsers(listUserCopy)
+  }
+
+  const handleDeleteTable = (user) => {
+    let listUserNew = _.cloneDeep(listUsers)
+    listUserNew = listUserNew.filter(item => item.id !== user.id)
+    console.log(listUserNew);
+
+    setListUsers(listUserNew)
   }
 
 
 
-  const handleEdit = (user)=>{
-      setIsShowModalEdit(true)
-      //getOneUser(userId)   
-      setUserEdit(user);
-      
+  const handleEdit = (user) => {
+    setIsShowModalEdit(true)
+
+    setUserEdit(user);
+
   }
 
-  const handleDelete = (userId)=>{
-    console.log(userId);
+  const handleDelete = async (user) => {
+    setIsShowModalConfirm(true)
+    setUserDelete(user)
+    handleDeleteTable(user)
   }
 
 
   return (
     <>
-
       <div className='d-flex add-new my-3 justify-content-between'>
         <span><b>List User: </b></span>
         <button className='btn btn-primary' onClick={() => { setIsShowModalAdd(true) }}>Add new</button>
       </div>
       <ModalAdd show={isShowModalAdd} handleClose={handleClose} handleUpdateTable={handleUpdateTable} />
+
       <ModalEdit show={isShowModalEdit} handleClose={handleClose} handleEditTable={handleEditTable} user={userEdit} />
+
+      <ModalConfirm show={isShowModalConfirm} handleClose={handleClose} handleDeleteTable={handleDeleteTable} user={userDelete} />
 
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>ID
+            <i class="fa-solid fa-sort"></i>
+            
+            </th>
             <th>Email</th>
             <th>First Name</th>
             <th>Last Name</th>
@@ -102,8 +125,9 @@ const TableUsers = () => {
                   <td>{item.first_name}</td>
                   <td>{item.last_name}</td>
                   <td>
-                    <button className="btn btn-warning mx-3" onClick={()=>handleEdit(item)}>Edit</button>
-                    <button className="btn btn-danger"onClick={()=>handleDelete(item.id)}>Delete</button>
+                    <button className="btn btn-warning mx-3" onClick={() => handleEdit(item)}>Edit</button>
+
+                    <button className="btn btn-danger" onClick={() => handleDelete(item)}>Delete</button>
                   </td>
                 </tr>
               )

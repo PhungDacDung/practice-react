@@ -30,9 +30,8 @@ function ModalAdd(props) {
   
   return (
     <>
-
-
-      <Modal show={show} onHide={handleClose} handleUpdateTable={handleUpdateTable}>
+      <Modal show={show} onHide={handleClose} handleUpdateTable={handleUpdateTable} backdrop="static"
+        keyboard={false}>
         <Modal.Header closeButton>
           <Modal.Title>Add new user</Modal.Title>
         </Modal.Header>
