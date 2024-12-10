@@ -4,8 +4,9 @@ import { fetchAllUser} from "./services/UserService";
 import ReactPaginate from "react-paginate";
 import ModalAdd from "./ModalAdd";
 import ModalEdit from "./ModalEdit";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import ModalConfirm from "./ModalConfirm";
+import "./TableUser.scss";
 
 
 
@@ -22,6 +23,9 @@ const TableUsers = () => {
   const [isShowModalAdd, setIsShowModalAdd] = useState(false)
   const [isShowModalEdit, setIsShowModalEdit] = useState(false)
   const [isShowModalConfirm, setIsShowModalConfirm] = useState(false)
+
+  const[sortBy,setSortBy] = useState("asc")
+  const[sortField,setSortField] = useState("id")
 
 
   const handleClose = () => {
@@ -89,6 +93,34 @@ const TableUsers = () => {
     handleDeleteTable(user)
   }
 
+  const handleSortBy = (fieldSort)=>{
+    if(sortBy === "asc"){
+      setSortBy("desc")
+    }
+    else{
+      setSortBy("asc")
+    }
+    setSortField(fieldSort)
+    console.log("check sort= ",sortBy,sortField);
+    let listUserCopy = _.cloneDeep(listUsers)
+
+    listUserCopy = _.orderBy(listUserCopy,[sortField],[sortBy]);
+    setListUsers(listUserCopy)
+  }
+
+  const handleSearch = debounce((event)=>{
+      let search = event.target.value;
+      let listUserCopy = _.cloneDeep(listUsers)
+      if(search){
+        listUserCopy =listUserCopy.filter(item => item.email.includes(search));
+       setListUsers(listUserCopy)
+
+      }
+      else{
+        getUsers(1)
+      }
+  },500)
+
 
   return (
     <>
@@ -96,6 +128,11 @@ const TableUsers = () => {
         <span><b>List User: </b></span>
         <button className='btn btn-primary' onClick={() => { setIsShowModalAdd(true) }}>Add new</button>
       </div>
+
+      <div className="my-2">
+        <input type="text" className="" placeholder="Search" onChange={(event) =>{handleSearch(event)}} />
+      </div>
+
       <ModalAdd show={isShowModalAdd} handleClose={handleClose} handleUpdateTable={handleUpdateTable} />
 
       <ModalEdit show={isShowModalEdit} handleClose={handleClose} handleEditTable={handleEditTable} user={userEdit} />
@@ -106,11 +143,19 @@ const TableUsers = () => {
         <thead>
           <tr>
             <th>ID
-            <i class="fa-solid fa-sort"></i>
-            
+              <i 
+              className="fa-solid fa-sort ms-2 px-1 cursor-pointer"
+              onClick={()=>{handleSortBy("id")}}
+              ></i>
             </th>
             <th>Email</th>
-            <th>First Name</th>
+            <th>
+              First Name
+              <i 
+              className="fa-solid fa-sort ms-2 px-1 pe-auto"
+              onClick={()=>{handleSortBy("first_name")}}
+              ></i>
+              </th>
             <th>Last Name</th>
             <th>Action</th>
           </tr>
