@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { fetchAllUser} from "./services/UserService";
+import { fetchAllUser } from "./services/UserService";
 import ReactPaginate from "react-paginate";
 import ModalAdd from "./ModalAdd";
 import ModalEdit from "./ModalEdit";
 import _, { debounce } from "lodash";
 import ModalConfirm from "./ModalConfirm";
 import "./TableUser.scss";
-
+import { CSVLink } from "react-csv";
 
 
 
@@ -24,9 +24,9 @@ const TableUsers = () => {
   const [isShowModalEdit, setIsShowModalEdit] = useState(false)
   const [isShowModalConfirm, setIsShowModalConfirm] = useState(false)
 
-  const[sortBy,setSortBy] = useState("asc")
-  const[sortField,setSortField] = useState("id")
-
+  const [sortBy, setSortBy] = useState("asc")
+  const [sortField, setSortField] = useState("id")
+  const [dataExport,setDataExport] = useState([])
 
   const handleClose = () => {
     setIsShowModalAdd(false)
@@ -93,45 +93,101 @@ const TableUsers = () => {
     handleDeleteTable(user)
   }
 
-  const handleSortBy = (fieldSort)=>{
-    if(sortBy === "asc"){
+  const handleSortBy = (fieldSort) => {
+    if (sortBy === "asc") {
       setSortBy("desc")
     }
-    else{
+    else {
       setSortBy("asc")
     }
     setSortField(fieldSort)
-    console.log("check sort= ",sortBy,sortField);
+    console.log("check sort= ", sortBy, sortField);
     let listUserCopy = _.cloneDeep(listUsers)
 
-    listUserCopy = _.orderBy(listUserCopy,[sortField],[sortBy]);
+    listUserCopy = _.orderBy(listUserCopy, [sortField], [sortBy]);
     setListUsers(listUserCopy)
   }
 
-  const handleSearch = debounce((event)=>{
-      let search = event.target.value;
-      let listUserCopy = _.cloneDeep(listUsers)
-      if(search){
-        listUserCopy =listUserCopy.filter(item => item.email.includes(search));
-       setListUsers(listUserCopy)
+  const handleSearch = debounce((event) => {
+    let search = event.target.value;
+    let listUserCopy = _.cloneDeep(listUsers)
+    if (search) {
+      listUserCopy = listUserCopy.filter(item => item.email.includes(search));
+      setListUsers(listUserCopy)
+
+    }
+    else {
+      getUsers(1)
+    }
+  }, 500)
+
+  const csvData = [
+    ["firstname", "lastname", "email"],
+    ["Ahmed", "Tomi", "ah@smthing.co.com"],
+    ["Raed", "Labes", "rl@smthing.co.com"],
+    ["Yezzi", "Min l3b", "ymin@cocococo.com"]
+  ];
+
+  const getUserExport = (event, done)=>{
+      let result = []
+      if(listUsers && listUsers.length > 0){
+        result.push(["Id","Email","First Name","Last Name"])
+        listUsers.map((item) =>{
+          let arr = [];
+          arr[0] = item.id;
+          arr[1] = item.email;
+          arr[2] = item.first_name;
+          arr[3] = item.last_name;
+          result.push(arr);
+        })
+
+        setDataExport(result)
+        done()
 
       }
-      else{
-        getUsers(1)
-      }
-  },500)
+
+  }
 
 
   return (
     <>
       <div className='d-flex add-new my-3 justify-content-between'>
-        <span><b>List User: </b></span>
-        <button className='btn btn-primary' onClick={() => { setIsShowModalAdd(true) }}>Add new</button>
+        <div>
+          <span className="me-3"><b>List User: </b></span>
+          <CSVLink
+            data={dataExport}
+            filename={"list-user.csv"}
+            className="btn btn-primary"
+            asyncOnClick={true}
+            onClick={getUserExport}
+            target="_blank"
+          >
+            <i class="fa-solid fa-file-arrow-down me-2"></i>
+            Export file</CSVLink>
+
+
+        </div>
+
+        <div className="my-2 ">
+          <input type="text" className="" placeholder="Search" onChange={(event) => { handleSearch(event) }} />
+        </div>
+
+        <div>
+
+          <label className="btn btn-success me-3" htmlFor="file">
+            <i class="fa-solid fa-file-import me-2"></i>
+            Import</label>
+          <input type="file" id="file" hidden />
+          <button className='btn btn-primary' onClick={() => { setIsShowModalAdd(true) }}>
+            <i class="fa-solid fa-circle-plus me-2"></i>
+            Add new</button>
+        </div>
+
+
+
       </div>
 
-      <div className="my-2">
-        <input type="text" className="" placeholder="Search" onChange={(event) =>{handleSearch(event)}} />
-      </div>
+
 
       <ModalAdd show={isShowModalAdd} handleClose={handleClose} handleUpdateTable={handleUpdateTable} />
 
@@ -143,19 +199,19 @@ const TableUsers = () => {
         <thead>
           <tr>
             <th>ID
-              <i 
-              className="fa-solid fa-sort ms-2 px-1 cursor-pointer"
-              onClick={()=>{handleSortBy("id")}}
+              <i
+                className="fa-solid fa-sort ms-2 px-1 cursor-pointer"
+                onClick={() => { handleSortBy("id") }}
               ></i>
             </th>
             <th>Email</th>
             <th>
               First Name
-              <i 
-              className="fa-solid fa-sort ms-2 px-1 pe-auto"
-              onClick={()=>{handleSortBy("first_name")}}
+              <i
+                className="fa-solid fa-sort ms-2 px-1 pe-auto"
+                onClick={() => { handleSortBy("first_name") }}
               ></i>
-              </th>
+            </th>
             <th>Last Name</th>
             <th>Action</th>
           </tr>
