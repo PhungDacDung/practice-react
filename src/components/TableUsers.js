@@ -8,6 +8,9 @@ import _, { debounce } from "lodash";
 import ModalConfirm from "./ModalConfirm";
 import "./TableUser.scss";
 import { CSVLink } from "react-csv";
+import { toast } from 'react-toastify';
+import Papa from "papaparse";
+
 
 
 
@@ -26,7 +29,7 @@ const TableUsers = () => {
 
   const [sortBy, setSortBy] = useState("asc")
   const [sortField, setSortField] = useState("id")
-  const [dataExport,setDataExport] = useState([])
+  const [dataExport, setDataExport] = useState([])
 
   const handleClose = () => {
     setIsShowModalAdd(false)
@@ -36,6 +39,7 @@ const TableUsers = () => {
 
   useEffect(() => {
     getUsers(1)
+
   }, [])
 
   const getUsers = async (page) => {
@@ -128,23 +132,75 @@ const TableUsers = () => {
     ["Yezzi", "Min l3b", "ymin@cocococo.com"]
   ];
 
-  const getUserExport = (event, done)=>{
-      let result = []
-      if(listUsers && listUsers.length > 0){
-        result.push(["Id","Email","First Name","Last Name"])
-        listUsers.map((item) =>{
-          let arr = [];
-          arr[0] = item.id;
-          arr[1] = item.email;
-          arr[2] = item.first_name;
-          arr[3] = item.last_name;
-          result.push(arr);
-        })
+  const getUserExport = (event, done) => {
+    let result = []
+    if (listUsers && listUsers.length > 0) {
+      result.push(["Id", "Email", "First Name", "Last Name"])
+      listUsers.map((item) => {
+        let arr = [];
+        arr[0] = item.id;
+        arr[1] = item.email;
+        arr[2] = item.first_name;
+        arr[3] = item.last_name;
+        result.push(arr);
+      })
 
-        setDataExport(result)
-        done()
+      setDataExport(result)
+      done()
 
+    }
+
+  }
+
+  const handleImportData = (event) => {
+    if (event.target && event.target.files && event.target.files[0]) {
+
+      let file = event.target.files[0]
+      if (file.type !== "text/csv") {
+        toast.error("Required CSV file");
       }
+      else {
+        Papa.parse(file, {
+
+          //header: true,
+          complete: function (responses) {
+            let rawCsv = responses.data
+            if (rawCsv.length > 0) {
+              if (rawCsv[0] && rawCsv[0].length === 4) {
+                if (rawCsv[0][0] !== "Id" || rawCsv[0][1] !== "Email" || rawCsv[0][2] !== "First Name" || rawCsv[0][3] !== "Last Name") {
+                  toast.error("Wrong header format!")
+                }
+                else {
+                  let result = [];
+                  rawCsv.map((item, index) => {
+                    if (index > 0 && item.length === 4) {
+                      let obj = {}
+                      obj.id = item[0]
+                      obj.email = item[1]
+                      obj.first_name = item[2]
+                      obj.last_name = item[3]
+
+                      result.push(obj);
+                    }
+                  })
+                  if (result) {
+                    setListUsers(result)
+                    toast.success("Upload file success!")
+                  }
+                }
+              }
+              else {
+                toast.error("CSV file wrong format!")
+              }
+            }
+            else {
+              toast.error("File is empty!")
+            }
+          }
+        });
+      }
+    }
+
 
   }
 
@@ -162,7 +218,7 @@ const TableUsers = () => {
             onClick={getUserExport}
             target="_blank"
           >
-            <i class="fa-solid fa-file-arrow-down me-2"></i>
+            <i className="fa-solid fa-file-arrow-down me-2"></i>
             Export file</CSVLink>
 
 
@@ -175,11 +231,18 @@ const TableUsers = () => {
         <div>
 
           <label className="btn btn-success me-3" htmlFor="file">
-            <i class="fa-solid fa-file-import me-2"></i>
+            <i className="fa-solid fa-file-import me-2"></i>
             Import</label>
-          <input type="file" id="file" hidden />
+
+          <input
+            onChange={(event) => { handleImportData(event) }}
+            type="file"
+            id="file"
+            hidden />
+
+
           <button className='btn btn-primary' onClick={() => { setIsShowModalAdd(true) }}>
-            <i class="fa-solid fa-circle-plus me-2"></i>
+            <i className="fa-solid fa-circle-plus me-2"></i>
             Add new</button>
         </div>
 
