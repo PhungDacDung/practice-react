@@ -18,28 +18,23 @@ const Home = () => {
             setListUsers(res.data)
         }
     }
-    console.log(listUsers);
-    
-
-
+ 
     return (
-        <>
+        <div>
            <div className="d-flex ">
-
-           
                 {listUsers && listUsers.length > 0 &&
-                    listUsers.map((item) => {
+                    listUsers.map((item,index) => {
                         return (
-                            <>
-                            <div className="text-center">
+                        
+                            <div className="text-center" key={index}>
                                 <img className="mx-3 my-3 rounded-circle" src={item.avatar}/>
                                 <b><p>{item.first_name} {item.last_name}</p></b>
                             </div>
-                            </>
+                            
                         )
                     })}
             </div>
-        </>
+        </div>
     )
 }
 
